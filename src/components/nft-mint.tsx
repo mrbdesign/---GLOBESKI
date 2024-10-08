@@ -1,5 +1,8 @@
 "use client";
 
+import { TransactionButton } from "thirdweb/react";
+import { claimTo } from "thirdweb/extensions/erc1155";
+import { CustomConnectButton } from "./CustomConnectButton";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -10,13 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Loader2, Minus, Plus, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { ThirdwebContract } from "thirdweb";
-import {
-	ClaimButton,
-	ConnectButton,
-	MediaRenderer,
-	NFT,
-	useActiveAccount,
-} from "thirdweb/react";
+import { ClaimButton, MediaRenderer, NFT, useActiveAccount } from "thirdweb/react";
 import { client } from "@/lib/thirdwebClient";
 import React from "react";
 import { toast } from "sonner";
@@ -34,6 +31,16 @@ type Props = {
 	tokenId: bigint;
 };
 
+/**
+ * The `NftMint` component is responsible for rendering the UI and handling the logic for minting NFTs.
+ *
+ * It takes in various props related to the NFT contract, such as the contract instance, display name, description, contract image, price per token, currency symbol, and token ID.
+ *
+ * The component allows the user to adjust the quantity of NFTs to mint, and provides options to mint to a custom address. It also handles the minting process, displaying appropriate UI feedback, and integrating with the Thirdweb SDK.
+ *
+ * @param props - The props object containing the necessary information for the NFT minting process.
+ * @returns The rendered `NftMint` component.
+ */
 export function NftMint(props: Props) {
 	console.log(props);
 	const [isMinting, setIsMinting] = useState(false);
@@ -61,15 +68,16 @@ export function NftMint(props: Props) {
 	// const toggleTheme = () => {
 	// 	setTheme(theme === "dark" ? "light" : "dark");
 	// };
-	if (!props.pricePerToken) {
-		console.error("Invalid pricePerToken");
-		return null;
-	}
-	return (
-		<div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
-			<div className="absolute top-4 right-4">
-				<ConnectButton client={client} />
-			</div>
+	if (props.pricePerToken === null || props.pricePerToken === undefined) {
+  console.error("Invalid pricePerToken");
+  return null;
+}
+
+return (
+  <div className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat transition-colors duration-200" style={{backgroundImage: "url('/background.png')"}}>
+    <div className="absolute top-4 right-4">
+      <CustomConnectButton client={client} />
+    </div>
 
 			{/* <Button
 				variant="outline"
@@ -105,9 +113,10 @@ export function NftMint(props: Props) {
 								}
 							/>
 						)}
-						<div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-full text-sm font-semibold">
-							{props.pricePerToken} {props.currencySymbol}/each
-						</div>
+					<div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-full text-sm font-semibold">
+ 					{props.pricePerToken === 0 ? "FREE" : `${props.pricePerToken} ${props.currencySymbol}/each`}
+					</div>
+
 					</div>
 					<h2 className="text-2xl font-bold mb-2 dark:text-white">
 						{props.displayName}
@@ -145,8 +154,9 @@ export function NftMint(props: Props) {
 							</Button>
 						</div>
 						<div className="text-base pr-1 font-semibold dark:text-white">
-							Total: {props.pricePerToken * quantity} {props.currencySymbol}
-						</div>
+                        	Total: {props.pricePerToken === 0 ? "FREE" : `${props.pricePerToken * quantity} ${props.currencySymbol}`}
+                        </div>
+
 					</div>
 
 					<div className="flex items-center space-x-2 mb-4">
@@ -159,7 +169,7 @@ export function NftMint(props: Props) {
 							htmlFor="custom-address"
 							className={`${useCustomAddress ? "" : "text-gray-400"} cursor-pointer`}
 						>
-							Mint to a custom address
+							友達にミント Mint to a custom address
 						</Label>
 					</div>
 					{useCustomAddress && (
@@ -176,60 +186,53 @@ export function NftMint(props: Props) {
 					)}
 				</CardContent>
 				<CardFooter>
-					{account ? (
-						<ClaimButton
-							theme={"light"}
-							contractAddress={props.contract.address}
-							chain={props.contract.chain}
-							client={props.contract.client}
-							claimParams={
-								props.isERC1155
-									? {
-											type: "ERC1155",
-											tokenId: props.tokenId,
-											quantity: BigInt(quantity),
-											to: customAddress,
-										}
-									: props.isERC721
-										? {
-												type: "ERC721",
-												quantity: BigInt(quantity),
-												to: customAddress,
-											}
-										: {
-												type: "ERC20",
-												quantity: String(quantity),
-												to: customAddress,
-											}
-							}
-							style={{
-								backgroundColor: "black",
-								color: "white",
-								width: "100%",
-							}}
-							disabled={isMinting}
-							onTransactionSent={() => toast.info("Minting NFT")}
-							onTransactionConfirmed={() =>
-								toast.success("Minted successfully")
-							}
-							onError={(err) => toast.error(err.message)}
-						>
-							Mint {quantity} NFT{quantity > 1 ? "s" : ""}
-						</ClaimButton>
-					) : (
-						<ConnectButton
-							client={client}
-							connectButton={{ style: { width: "100%" } }}
-						/>
-					)}
-				</CardFooter>
-			</Card>
-			{true && (
-				<Toast className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md">
-					Successfully minted {quantity} NFT{quantity > 1 ? "s" : ""}
-					{useCustomAddress && customAddress ? ` to ${customAddress}` : ""}!
-				</Toast>
-			)}
-		</div>
+  {account ? (
+    <TransactionButton
+      transaction={() =>
+        claimTo({
+          contract: props.contract,
+          to: customAddress || account?.address || "",
+          tokenId: props.tokenId,
+          quantity: BigInt(quantity),
+        })
+      }
+      style={{
+        backgroundColor: "black",
+        color: "white",
+        width: "100%",
+      }}
+      disabled={isMinting}
+      onTransactionSent={() => toast.info("ミント中Minting NFT")}
+      onTransactionConfirmed={() => toast.success("ミント完了Minted successfully")}
+      onError={(err) => toast.error(err.message)}
+    >
+      コレクト {quantity} NFT{quantity > 1 ? "s" : ""}
+    </TransactionButton>
+  ) : (
+    <CustomConnectButton
+      client={client}
+      connectButton={{ style: { width: "100%" } }}
+    />
+  )}
+</CardFooter>
+
+				</Card>
+				<p className="text-center mt-4 text-sm text-white">
+  By clicking 'コレクト', you agree to our{' '}
+  <a href="https://www.mrbriandesign.com/terms" target="_blank" rel="noopener noreferrer" className="underline">
+    terms of service
+  </a>
+  .
+</p>
+<p className="text-center mt-2 text-sm text-white">
+  すぐ上の「コレクト」をクリックすると、利用規約に同意したことになります。
+</p>
+{true && (
+  <Toast className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md">
+    Successfully minted {quantity} NFT{quantity > 1 ? "s" : ""}
+    {useCustomAddress && customAddress ? ` to ${customAddress}` : ""}!
+  </Toast>
+)}
+</div>
 	);
 }

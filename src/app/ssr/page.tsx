@@ -1,3 +1,4 @@
+
 import { NftMint } from "@/components/nft-mint";
 import {
 	defaultChainId,
@@ -83,7 +84,7 @@ export default async function Home() {
 	const pricePerToken =
 		currencyMetadata && priceInWei
 			? Number(toTokens(priceInWei, currencyMetadata.decimals))
-			: null;
+			: 0;
 
 	return (
 		<NftMint
