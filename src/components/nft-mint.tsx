@@ -1,7 +1,7 @@
 "use client";
 
 import { TransactionButton } from "thirdweb/react";
-import { claimTo } from "thirdweb/extensions/erc1155";
+import { claimTo } from "thirdweb/extensions/erc721";
 import { CustomConnectButton } from "./CustomConnectButton";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
