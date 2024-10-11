@@ -166,30 +166,27 @@ export function NftMint(props: Props) {
         <CardFooter>
           {account ? (
             <TransactionButton
-			transaction={() =>
-			  claimTo({
-				contract: props.contract,
-				to: customAddress || account?.address || "",
-				quantity: BigInt(quantity),
-			  })
-			}
-			style={{
-			  backgroundColor: "black",
-			  color: "white",
-			  width: "100%",
-			}}
-			disabled={isMinting}
-			onTransactionSent={() => toast.info("ミント中Minting NFT")}
-			onTransactionConfirmed={() => toast.success("ミント完了Minted successfully")}
-			onError={(err) => toast.error(err.message)}
-		  >
-			コレクト {quantity} NFT{quantity > 1 ? "s" : ""}
-		  </TransactionButton>
-		  
+              transaction={() =>
+                claimTo({
+                  contract: props.contract,
+                  to: customAddress || account?.address || "",
+                  quantity: BigInt(quantity),
+                })
+              }
+              style={{
+                backgroundColor: "black",
+                color: "white",
+                width: "100%",
+              }}
+              disabled={isMinting}
+              onTransactionSent={() => toast.info("ミント中Minting NFT")}
+              onTransactionConfirmed={() => toast.success("ミント完了Minted successfully")}
+              onError={(err) => toast.error(err.message)}
+            >
+              コレクト {quantity} NFT{quantity > 1 ? "s" : ""}
+            </TransactionButton>
           ) : (
-            <CustomConnectButton
-              connectButton={{ style: { width: "100%" } }}
-            />
+            <CustomConnectButton className="w-full" />
           )}
         </CardFooter>
       </Card>

@@ -1,11 +1,10 @@
 import { createThirdwebClient } from "thirdweb";
-import { ConnectButton, TransactionButton } from "thirdweb/react";
+import { ConnectButton } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
 import { base } from "thirdweb/chains";
 
-
 const client = createThirdwebClient({
-  clientId: "126fdaa6ef43f1981d3f51661fc4a527", // Replace with your actual client ID
+  clientId: "126fdaa6ef43f1981d3f51661fc4a527",
 });
 
 const wallets = [
@@ -24,8 +23,13 @@ const wallets = [
   }),
 ];
 
-export function CustomConnectButton() {
-    return (
+interface CustomConnectButtonProps {
+  className?: string;
+}
+
+export function CustomConnectButton({ className }: CustomConnectButtonProps) {
+  return (
+    <div className={className}>
       <ConnectButton
         client={client}
         wallets={wallets}
@@ -39,5 +43,6 @@ export function CustomConnectButton() {
           showThirdwebBranding: false,
         }}
       />
-    );
-  }
+    </div>
+  );
+}
